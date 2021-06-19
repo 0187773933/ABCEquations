@@ -1,8 +1,8 @@
 # ABCEquations.js
 
-- Electrical Current Calculation Example
-https://39363.org/NOTES/WSU/2021/Spring/NEURO3200/Calculators/Current/
-- https://github.com/0187773933/Notes/blob/master/WSU/2021/Spring/NEURO3200/Calculators/Current/index.html
+- Electrical Current Calculation Example :
+  - https://39363.org/NOTES/WSU/2021/Spring/NEURO3200/Calculators/Current/
+  - https://github.com/0187773933/Notes/blob/master/WSU/2021/Spring/NEURO3200/Calculators/Current/index.html
 
 - This is a thing for making interactive equations
 
@@ -24,5 +24,5 @@ https://39363.org/NOTES/WSU/2021/Spring/NEURO3200/Calculators/Current/
 
 Two examples of the minimum html/js needed make equations using ABCEquations.js
 
-https://gist.github.com/0187773933/278b659f1a111bcb473cfb1a5715d0fa
-https://gist.github.com/0187773933/34855dbdd4954b05e8576a175aeb2aa5
+- https://gist.github.com/0187773933/278b659f1a111bcb473cfb1a5715d0fa
+- https://gist.github.com/0187773933/34855dbdd4954b05e8576a175aeb2aa5
