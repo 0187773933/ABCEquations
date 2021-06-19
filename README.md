@@ -2,7 +2,7 @@
 
 - Electrical Current Calculation Example
 https://39363.org/NOTES/WSU/2021/Spring/NEURO3200/Calculators/Current/
-https://github.com/0187773933/Notes/blob/master/WSU/2021/Spring/NEURO3200/Calculators/Current/index.html
+- https://github.com/0187773933/Notes/blob/master/WSU/2021/Spring/NEURO3200/Calculators/Current/index.html
 
 - This is a thing for making interactive equations
 
