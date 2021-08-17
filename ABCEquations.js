@@ -103,7 +103,7 @@ const MetricUnits = [
 		id: 15,
 		value: "micro",
 		label: "micro",
-		symbol: "Âµ",
+		symbol: "µ",
 		base_10: -6,
 	} ,
 	{
@@ -171,6 +171,7 @@ function _build_metric_unit_selector_html_string( equations_global_index , base1
 	let default_index = _get_id_from_base_10( base10 );
 	for ( let i = 0; i < MetricUnits.length; ++i ) {
 		if ( i === default_index ) {
+			console.log( `setting to ${default_index}` );
 			html_string += `<option selected="selected" value="${MetricUnits[i]["id"]}">${MetricUnits[i]["label"]} (${MetricUnits[i]["symbol"]}) (${MetricUnits[i]["base_10"]})</option>`;
 		} else {
 			html_string += `<option value="${MetricUnits[i]["id"]}">${MetricUnits[i]["label"]} (${MetricUnits[i]["symbol"]}) (${MetricUnits[i]["base_10"]})</option>`;
@@ -297,7 +298,7 @@ class ABCEquationWrapper {
 			let input_slider_min = parseFloat( input_element.getAttribute( "slider_min" ) );
 			let input_slider_max = parseFloat( input_element.getAttribute( "slider_max" ) );
 			let input_slider_step = parseFloat( input_element.getAttribute( "slider_step" ) );
-			let output_default_base10 = parseInt( input_element.getAttribute( "default_base10" ) );
+			let output_default_base10 = parseInt( output_element.getAttribute( "default_base10" ) );
 			this.operator_elements[ i ].meta = {
 				input_units_name: input_units_name ,
 				input_default_value: input_default_value ,
@@ -315,7 +316,7 @@ class ABCEquationWrapper {
 			let output_metric_selector_html_string = _build_metric_unit_selector_html_string( our_position_in_global_equations , output_default_base10 , "output" );
 
 			// d.) Add to Input/Ouput Table
-			io_table_html_string += `<tr><td>${operator_name}</td>`;
+			io_table_html_string += `<tr id="${this.options.element.id}-operator-${operator_name}"><td>${operator_name}</td>`;
 			io_table_html_string += `<td><input onchange="ABC_EQUATION_WRAPPERS[ ${our_position_in_global_equations} ].textInputUpdate(this)" class="text_input" style="width: 70px;" type="text" placeholder="${input_default_value}"></input>`;
 			io_table_html_string += `<input onchange="ABC_EQUATION_WRAPPERS[ ${our_position_in_global_equations} ].sliderInputUpdate(this)" class="range_slider" type="range" min="${input_slider_min}" max="${input_slider_max}" step="${input_slider_step}" defaultValue="${input_default_value}"></td>`;
 			io_table_html_string += `<td class="metric-units">${input_metric_selector_html_string}</td>`;
@@ -355,8 +356,23 @@ class ABCEquationWrapper {
 		this.randomize_inputs_button_element.innerHTML = `<button onclick="ABC_EQUATION_WRAPPERS[ ${our_position_in_global_equations} ].randomizeInputs(this)">Randomize Inputs</button>`;
 		this.options_panel_element.appendChild( this.randomize_inputs_button_element );
 
-		this.options.element.appendChild( this.options_panel_element );
+		// Create Decimal Place Cutoff Amount Dropdown-Selector
+		this.decimal_place_selector_element = document.createElement( "span" );
+		let decimal_place_selector_html_string = `&nbsp&nbsp&nbsp<select id="${this.options.element.id}-decimal-places" onchange="ABC_EQUATION_WRAPPERS[ ${our_position_in_global_equations} ].decimalPlacesUpdate(this)">`;
+		for ( let i = 1; i < 21; ++i ) {
+			if ( i === 3 ) {
+				decimal_place_selector_html_string += `<option selected="selected" value="${i}">${i}</option>`;
+			} else {
+				decimal_place_selector_html_string += `<option value="${i}">${i}</option>`;
+			}
+		}
+		decimal_place_selector_html_string += "</select> Decimal Places";
+		this.decimal_place_selector_element.innerHTML = decimal_place_selector_html_string;
+		this.options_panel_element.appendChild( this.decimal_place_selector_element );
+
+
 		this.options.element.appendChild( this.io_table_element );
+
 
 		// 3.) Build Live Latex Template String Placeholder Element
 		this.result_katex_element = document.createElement( "p" );
@@ -396,19 +412,27 @@ class ABCEquationWrapper {
 			let input_quantity;
 			try { input_quantity = Qty( `${input_value} ${input_units.label}${input_unit_name}` ); }
 			catch( e ) { input_quantity = Qty( `${input_value}${input_unit_name}` ); }
+			// let output_base_10_index = _get_id_from_base_10( this.operator_elements[ i ].meta.output_default_base10 );
+			// console.log( MetricUnits[ output_base_10_index ] );
+			// console.log( this.options.element.querySelectorAll( "select.output" )[ i ].selectedIndex , output_base_10_index );
+			// this.options.element.querySelectorAll( "select.output" )[ i ].selectedIndex = output_base_10_index;
+			console.log( this.options.element.querySelectorAll( "select.output" )[ i ].selectedIndex );
 			let output_units = MetricUnits[ this.options.element.querySelectorAll( "select.output" )[ i ].selectedIndex ];
 			let output_quantity;
 			try { output_quantity = input_quantity.to( `${output_units.label}${input_unit_name}` ); }
 			catch( e ) { output_quantity = input_quantity; }
+
+			let decimal_places = ( document.getElementById( `${this.options.element.id}-decimal-places` ).selectedIndex + 1 );
 			let adjusted_value = input_value;
 			let adjustment_latex_string = "";
 			let adjustment_string = "";
 			if ( input_units.base_10 !== output_units.base_10 ) {
-				this.log( "Ouput Base10 is Different than Input Base10" );
+				this.log( "Output Base10 is Different than Input Base10" );
 				adjusted_value = ( ( input_value * ( 1 * 10**( input_units.base_10 - output_units.base_10 ) ) ) );
 				adjustment_latex_string = String.raw` * \left(\ 10^{\left(\ \left(\ ${input_units.base_10}\ \right) - \left(\ ${output_units.base_10}\ \right) \ \right)}\ \right)`;
 				adjustment_string = ` * ( 10^( ( ${input_units.base_10} ) - ( ${output_units.base_10} ) ) )`;
 			}
+			adjusted_value = adjusted_value.toFixed( decimal_places );
 			let final_latex_string = String.raw`${input_value}${adjustment_latex_string}\ ${output_units.label}\ ${input_unit_name}`;
 			let final_string = `${input_value}${adjustment_string} ${output_units.label} ${input_unit_name}`;
 			this.options.element.querySelectorAll( "p.adjusted-value" )[ i ].innerText = adjusted_value;
@@ -522,6 +546,10 @@ class ABCEquationWrapper {
 		slider.previousSibling.value = slider.value;
 		this.update();
 	}
+	decimalPlacesUpdate( element ) {
+		window.decimal_places = ( document.getElementById( `${this.options.element.id}-decimal-places` ).selectedIndex + 1 );
+		this.update();
+	}
 	update() {
 		this.log( "update()" );
 		this.calculate();
@@ -531,6 +559,7 @@ class ABCEquationWrapper {
 
 async function ABCEquationsHookDIVS() {
 	console.log( "ABCEquationsHookDIVS()" );
+	window.decimal_places = 3;
 	try{ Qty("1 Volt") } catch( e ){ console.log( "Loading Quantity Manager Library" ); await _load_script_library( "https://39363.org/CDN/NOTES/quantities.js" ); }
 	try{ pluralize( "Volts" , 1 ) } catch( e ){ console.log( "Loading Pluralize Library" ); await _load_script_library( "https://39363.org/CDN/NOTES/pluralize.min.js" ); }
 	let equations = document.querySelectorAll( "div.abc-equation" );

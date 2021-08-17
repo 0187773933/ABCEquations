@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Nernst Equation</title>
+	<link href="https://39363.org/CDN/NOTES/favicon.png" rel="icon" type="image/x-icon" />
+	<link rel="stylesheet" href="https://39363.org/CDN/NOTES/github-markdown.css" crossorigin="anonymous" />
+	<!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> -->
+	<link rel="stylesheet" href="https://39363.org/CDN/NOTES/katex.min.css" crossorigin="anonymous">
+	<script defer src="https://39363.org/CDN/NOTES/katex.min.js"  crossorigin="anonymous"></script>
+	<script defer src="https://39363.org/CDN/NOTES/mhchem.min.js" crossorigin="anonymous"></script>
+	<script defer src="https://39363.org/CDN/NOTES/auto-render.min.js" crossorigin="anonymous"></script>
+	<script src="https://39363.org/CDN/NOTES/ABCEquations.js"></script>
+	<style>
+		.markdown-body {
+			box-sizing: border-box;
+			min-width: 200px;
+			max-width: 980px;
+			margin: 0 auto;
+			padding: 45px;
+		}
+		@media (max-width: 767px) {
+			.markdown-body {
+				padding: 15px;
+			}
+		}
+	</style>
+</head>
+<body onload="init()">
+	<article class="markdown-body">
+
+		<center>
+			<h1>Nernst Equation</h1>
+		</center>
+
+		<!-- <input id="show_info" type="checkbox" class="checkbox" name="show_info" checked="0" value="0" onchange="on_show_info(this)"></input>
+		<label for="show_info">&nbsp;Info&nbsp;</label>
+		<div id="info" style="display:none;" >
+        </div>
+        <br><br> -->
+		<div class="abc-equation" name="Current Example Calculation 1" id="NernstEquation" >
+			<div class="equation-display">
+				<p>
+                    $$
+                    \text{Equalibrium of Ion "Z"} = E_Z = \frac{\frac{8.314\ Joules}{1\ Kelvin \cdot mol} * (37\ ^{\circ}C + 273.15) ^{\circ}K}{\text{Charge of Ion (Z)} * \frac{96,485\ Joules}{Volts \cdot mol}}* ln\left(\frac{[Z]_{outside} (Molar)}{[Z]_{inside} (Molar)}\right)
+                    $$
+                </p>
+                <br>
+			</div>
+			<div class="operator" name="temperature" >
+				<div class="input" unit_name="celsius" default_value="37.0" default_base10="0" slider_min="-273.15" slider_max="300.0" slider_step="1.0"></div>
+				<div class="output" default_base10="0" ></div>
+			</div>
+			<div class="operator" name="ion-charge" >
+				<div class="input" unit_name="each" default_value="-1.0" default_base10="0" slider_min="-10.0" slider_max="10.0" slider_step="1.0"></div>
+				<div class="output" default_base10="0" ></div>
+			</div>
+			<div class="operator" name="outside-concentration" >
+				<div class="input" unit_name="molar" default_value="1.0" default_base10="-3" slider_min="0.0" slider_max="100.0" slider_step="1.0"></div>
+				<div class="output" default_base10="-3" ></div>
+			</div>
+			<div class="operator" name="inside-concentration" >
+				<div class="input" unit_name="molar" default_value="1.0" default_base10="-3" slider_min="0.0" slider_max="100.0" slider_step="1.0"></div>
+				<div class="output" default_base10="-3" ></div>
+			</div>
+			<script>
+				function NernstEquationCalculationFunction() {
+					this.log( "NernstEquationCalculationFunction()" );
+
+                    let temperature = ( this["temperature"].output.adjusted_value + 273.15 );
+                    let numerator = ( 8.314 * temperature );
+                    let denominator = ( this["ion-charge"].output.adjusted_value * 96485 );
+                    let natural_log_result = Math.log( this["outside-concentration"].output.adjusted_value / this["inside-concentration"].output.adjusted_value );
+					this.result = ( ( numerator / denominator ) * natural_log_result );
+                    this.millivolt_result = ( this.result * 1000 );
+					this.equation_live_string_latex = String.raw`$$E_Z = \frac{\frac{8.314\ Joules}{1\ Kelvin \cdot mol} * (${this["temperature"].output.adjusted_value}\ ^{\circ}C + 273.15) ^{\circ}K}`;
+                    this.equation_live_string_latex += String.raw`{(${this["ion-charge"].output.adjusted_value}) * \frac{96,485\ Joules}{Volts \cdot mol}} `;
+                    this.equation_live_string_latex += String.raw`* ln\left(\frac{[${this["outside-concentration"].output.adjusted_value}]_{outside}\ ${this["outside-concentration"].output.units.label}\ Molar}`;
+                    this.equation_live_string_latex += String.raw`{[${this["inside-concentration"].output.adjusted_value}]_{inside}\ ${this["inside-concentration"].output.units.label}\ Molar}\right)`;
+                    this.equation_live_string_latex += String.raw`= ${this.result}\ Volts = ${this.millivolt_result}\ milli\ Volts$$`;
+					// this.equation_live_string = `Driving Force = ( ( ${this["membrane-potential"].output.final_string} ) - ( ${this["equalibrium-potential"].output.final_string} ) ) = ${this.result} ${this["equalibrium-potential"].output.units.label}\ Volts`;
+					this.equation_live_string = `Ez = ( ( 8.314 Joules / 1 Kelvin · mol ) * ( ${temperature} °K ) ) / ( ${this["ion-charge"].output.adjusted_value} * ( 96485 Joules / Volts · mol ) * ( 1 Volt / 1000 mV ) ) ) * ( ln( [${this["outside-concentration"].output.adjusted_value}] ${this["outside-concentration"].output.units.label} Molar / [${this["inside-concentration"].output.adjusted_value}] ${this["inside-concentration"].output.units.label} Molar ) ) = ${this.result} Volts = ${this.millivolt_result} milli Volts`
+
+				}
+			</script>
+		</div>
+
+	</article>
+
+	<script>
+		function init() {
+			try { document.getElementById( "show_info" ).checked = false; } catch( e ) {}
+			renderMathInElement( document.body , {
+				strict: "ignore" ,
+				delimiters: [ // https://stackoverflow.com/a/45301641
+					{ left: "$$" , right: "$$" , display: true } ,
+					{ left: "\\[" , right: "\\]" , display: true } ,
+					{ left: "$" , right: "$" , display: false } ,
+					{ left: "\\(" , right: "\\)" , display: false }
+				]
+			});
+			ABCEquationsHookDIVS();
+			console.log( ABC_EQUATION_WRAPPERS );
+		}
+		function on_show_info( checkbox ) {
+			console.log( `Show Info Enabled === ${checkbox.checked}` );
+			if ( checkbox.checked ) {
+				document.getElementById( "info" ).style.display = "block";
+			} else {
+				document.getElementById( "info" ).style.display = "none";
+			}
+		}
+	</script>
+</body>
+</html>
